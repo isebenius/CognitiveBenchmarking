@@ -3,6 +3,7 @@ from generators.melody_continuation import MelodyContinuationGenerator
 from generators.scale_filling import ScaleFillingGenerator
 from generators.interval_likelihood import IntervalLikelihoodGenerator
 from generators.interval_recognition import IntervalRecognitionGenerator
+from generators.bar_shuffling import BarShufflingGenerator
 
 # Export all generator classes
 __all__ = [
@@ -10,5 +11,6 @@ __all__ = [
     'MelodyContinuationGenerator',
     'ScaleFillingGenerator',
     'IntervalLikelihoodGenerator',
-    'IntervalRecognitionGenerator'
+    'IntervalRecognitionGenerator',
+    'BarShufflingGenerator'
 ]
