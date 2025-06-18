@@ -4,6 +4,8 @@ from generators.scale_filling import ScaleFillingGenerator
 from generators.interval_likelihood import IntervalLikelihoodGenerator
 from generators.interval_recognition import IntervalRecognitionGenerator
 from generators.bar_shuffling import BarShufflingGenerator
+from generators.track_transposition import TrackTranspositionGenerator
+from generators.note_alteration import RandomNoteAlterationGenerator
 
 # Export all generator classes
 __all__ = [
@@ -12,5 +14,7 @@ __all__ = [
     'ScaleFillingGenerator',
     'IntervalLikelihoodGenerator',
     'IntervalRecognitionGenerator',
-    'BarShufflingGenerator'
+    'BarShufflingGenerator',
+    'TrackTranspositionGenerator',
+    'RandomNoteAlterationGenerator'
 ]

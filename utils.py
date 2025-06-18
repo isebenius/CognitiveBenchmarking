@@ -163,132 +163,132 @@ def time_dilate_midi(
     return output_path
 
 
-def transpose_track(midi_file_path, output_path, track_index, semitones):
-    """
-    Load a MIDI file and transpose a specific track by a given number of semitones.
+# def transpose_track(midi_file_path, output_path, track_index, semitones):
+#     """
+#     Load a MIDI file and transpose a specific track by a given number of semitones.
     
-    Args:
-        midi_file_path (str): Path to input MIDI file
-        output_path (str): Path for output MIDI file
-        track_index (int): Index of track to transpose (0-based)
-        semitones (int): Number of semitones to transpose (positive = up, negative = down)
-    """
-    # Load the MIDI file
-    mid = mido.MidiFile(midi_file_path)
+#     Args:
+#         midi_file_path (str): Path to input MIDI file
+#         output_path (str): Path for output MIDI file
+#         track_index (int): Index of track to transpose (0-based)
+#         semitones (int): Number of semitones to transpose (positive = up, negative = down)
+#     """
+#     # Load the MIDI file
+#     mid = mido.MidiFile(midi_file_path)
     
-    # Check if track index is valid
-    if track_index >= len(mid.tracks):
-        raise ValueError(f"Track index {track_index} out of range. File has {len(mid.tracks)} tracks.")
+#     # Check if track index is valid
+#     if track_index >= len(mid.tracks):
+#         raise ValueError(f"Track index {track_index} out of range. File has {len(mid.tracks)} tracks.")
     
-    # Create a copy to avoid modifying the original
-    new_mid = mido.MidiFile(ticks_per_beat=mid.ticks_per_beat)
+#     # Create a copy to avoid modifying the original
+#     new_mid = mido.MidiFile(ticks_per_beat=mid.ticks_per_beat)
     
-    for i, track in enumerate(mid.tracks):
-        new_track = mido.MidiTrack()
+#     for i, track in enumerate(mid.tracks):
+#         new_track = mido.MidiTrack()
         
-        for msg in track:
-            # Copy the message
-            new_msg = msg.copy()
+#         for msg in track:
+#             # Copy the message
+#             new_msg = msg.copy()
             
-            # If this is the track to transpose and the message has a note
-            if i == track_index and hasattr(msg, 'note') and msg.type in ['note_on', 'note_off']:
-                # Transpose the note, ensuring it stays within MIDI range (0-127)
-                new_note = max(0, min(127, msg.note + semitones))
-                new_msg.note = new_note
+#             # If this is the track to transpose and the message has a note
+#             if i == track_index and hasattr(msg, 'note') and msg.type in ['note_on', 'note_off']:
+#                 # Transpose the note, ensuring it stays within MIDI range (0-127)
+#                 new_note = max(0, min(127, msg.note + semitones))
+#                 new_msg.note = new_note
             
-            new_track.append(new_msg)
+#             new_track.append(new_msg)
         
-        new_mid.tracks.append(new_track)
+#         new_mid.tracks.append(new_track)
     
-    # Save the transposed MIDI file
-    new_mid.save(output_path)
-    print(f"Transposed track {track_index} by {semitones} semitones. Saved to {output_path}")
+#     # Save the transposed MIDI file
+#     new_mid.save(output_path)
+#     print(f"Transposed track {track_index} by {semitones} semitones. Saved to {output_path}")
 
-def reshuffle_bars(midi_file_path, output_path, ticks_per_bar=None, verbose = False):
-    """
-    Reshuffle the bars/segments of a MIDI file randomly.
+# def reshuffle_bars(midi_file_path, output_path, ticks_per_bar=None, verbose = False):
+#     """
+#     Reshuffle the bars/segments of a MIDI file randomly.
     
-    Args:
-        midi_file_path (str): Path to input MIDI file
-        output_path (str): Path for output MIDI file
-        ticks_per_bar (int): Number of ticks per bar. If None, will estimate based on time signature
-    """
-    # Load the MIDI file
-    mid = mido.MidiFile(midi_file_path)
+#     Args:
+#         midi_file_path (str): Path to input MIDI file
+#         output_path (str): Path for output MIDI file
+#         ticks_per_bar (int): Number of ticks per bar. If None, will estimate based on time signature
+#     """
+#     # Load the MIDI file
+#     mid = mido.MidiFile(midi_file_path)
     
-    # If ticks_per_bar not provided, estimate it
-    if ticks_per_bar is None:
-        # Default assumption: 4/4 time signature
-        ticks_per_bar = mid.ticks_per_beat * 4
+#     # If ticks_per_bar not provided, estimate it
+#     if ticks_per_bar is None:
+#         # Default assumption: 4/4 time signature
+#         ticks_per_bar = mid.ticks_per_beat * 4
     
-    # Find the total length of the MIDI file
-    total_ticks = 0
-    for track in mid.tracks:
-        track_ticks = sum(msg.time for msg in track)
-        total_ticks = max(total_ticks, track_ticks)
+#     # Find the total length of the MIDI file
+#     total_ticks = 0
+#     for track in mid.tracks:
+#         track_ticks = sum(msg.time for msg in track)
+#         total_ticks = max(total_ticks, track_ticks)
     
-    # Calculate number of complete bars
-    num_bars = total_ticks // ticks_per_bar
-    if num_bars < 2:
-        print("Warning: MIDI file appears to have less than 2 complete bars. Shuffling may not be meaningful.")
+#     # Calculate number of complete bars
+#     num_bars = total_ticks // ticks_per_bar
+#     if num_bars < 2:
+#         print("Warning: MIDI file appears to have less than 2 complete bars. Shuffling may not be meaningful.")
     
-    if verbose:
-        print(f"Detected {num_bars} bars of {ticks_per_bar} ticks each")
+#     if verbose:
+#         print(f"Detected {num_bars} bars of {ticks_per_bar} ticks each")
     
-    # Create shuffled bar order
-    bar_order = list(range(num_bars))
-    random.shuffle(bar_order)
-    if verbose:
-        print(f"New bar order: {bar_order}")
+#     # Create shuffled bar order
+#     bar_order = list(range(num_bars))
+#     random.shuffle(bar_order)
+#     if verbose:
+#         print(f"New bar order: {bar_order}")
     
-    # Create new MIDI file
-    new_mid = mido.MidiFile(ticks_per_beat=mid.ticks_per_beat)
+#     # Create new MIDI file
+#     new_mid = mido.MidiFile(ticks_per_beat=mid.ticks_per_beat)
     
-    # Process each track
-    for track in mid.tracks:
-        new_track = mido.MidiTrack()
+#     # Process each track
+#     for track in mid.tracks:
+#         new_track = mido.MidiTrack()
         
-        # Split track into bars
-        bars = [[] for _ in range(num_bars)]
-        current_bar = 0
-        current_tick = 0
+#         # Split track into bars
+#         bars = [[] for _ in range(num_bars)]
+#         current_bar = 0
+#         current_tick = 0
         
-        for msg in track:
-            # Add message to current bar
-            bars[current_bar].append(msg.copy())
+#         for msg in track:
+#             # Add message to current bar
+#             bars[current_bar].append(msg.copy())
             
-            # Update tick position
-            current_tick += msg.time
-            new_bar = current_tick // ticks_per_bar
+#             # Update tick position
+#             current_tick += msg.time
+#             new_bar = current_tick // ticks_per_bar
             
-            # If we've moved to a new bar, adjust timing
-            if new_bar > current_bar and new_bar < num_bars:
-                # Adjust the last message's timing to end exactly at bar boundary
-                if bars[current_bar]:
-                    excess_time = current_tick - (new_bar * ticks_per_bar)
-                    bars[current_bar][-1].time -= excess_time
+#             # If we've moved to a new bar, adjust timing
+#             if new_bar > current_bar and new_bar < num_bars:
+#                 # Adjust the last message's timing to end exactly at bar boundary
+#                 if bars[current_bar]:
+#                     excess_time = current_tick - (new_bar * ticks_per_bar)
+#                     bars[current_bar][-1].time -= excess_time
                     
-                    # Start next bar with the excess time
-                    current_bar = new_bar
-                    if excess_time > 0:
-                        # Create a new message with the excess time
-                        new_msg = msg.copy()
-                        new_msg.time = excess_time
-                        bars[current_bar].append(new_msg)
-                else:
-                    current_bar = new_bar
+#                     # Start next bar with the excess time
+#                     current_bar = new_bar
+#                     if excess_time > 0:
+#                         # Create a new message with the excess time
+#                         new_msg = msg.copy()
+#                         new_msg.time = excess_time
+#                         bars[current_bar].append(new_msg)
+#                 else:
+#                     current_bar = new_bar
         
-        # Rebuild track in shuffled order
-        for bar_idx in bar_order:
-            if bar_idx < len(bars):
-                for msg in bars[bar_idx]:
-                    new_track.append(msg)
+#         # Rebuild track in shuffled order
+#         for bar_idx in bar_order:
+#             if bar_idx < len(bars):
+#                 for msg in bars[bar_idx]:
+#                     new_track.append(msg)
         
-        new_mid.tracks.append(new_track)
+#         new_mid.tracks.append(new_track)
     
-    # Save the shuffled MIDI file
-    new_mid.save(output_path)
+#     # Save the shuffled MIDI file
+#     new_mid.save(output_path)
 
-    if verbose:
-        print(f"Reshuffled bars saved to {output_path}")
-    return output_path
+#     if verbose:
+#         print(f"Reshuffled bars saved to {output_path}")
+#     return output_path
