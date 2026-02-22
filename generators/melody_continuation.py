@@ -170,7 +170,7 @@ class MelodyContinuationGenerator(MIDIGenerator):
 
 if __name__ == "__main__":
     import pathlib
-    output_dir = pathlib.Path(__file__).parent.resolve() / "/data/examples/ContinuationExamples" 
+    output_dir = pathlib.Path(__file__).parent.resolve() / "../data/examples/ContinuationExamples" 
     generator = MelodyContinuationGenerator(output_dir)
-    context_path = pathlib.Path(__file__).parent.resolve() / "/data/human_data/Stimuli/t_01/C4/M2_a.mid"
+    context_path = pathlib.Path(__file__).parent.resolve() / "../data/human_data/Stimuli/t_01/C4/M2_a.mid"
     generator.generate_continuations(context_path, "C4")

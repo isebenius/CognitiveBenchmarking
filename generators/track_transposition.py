@@ -5,6 +5,7 @@ This script generates transposed versions of MIDI files by transposing specific 
 from pathlib import Path
 from typing import Union, List, Optional
 import mido
+import random
 from .base_generator import MIDIGenerator
 
 class TrackTranspositionGenerator(MIDIGenerator):

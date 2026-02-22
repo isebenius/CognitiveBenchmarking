@@ -45,7 +45,7 @@ class ScaleFillingGenerator(MIDIGenerator):
             6: [10, 11]       # Semitones above root for position 6
         }
     
-    def generate_all_scale_variations(self, key_name: str = "C", mode: str = "major"):
+    def generate_all_scale_variations(self, key_name: str = "C", mode: str = "major", include_controls: bool = False):
         """Generate all possible scale variations with the specified alternatives.
         
         Parameters
@@ -54,11 +54,16 @@ class ScaleFillingGenerator(MIDIGenerator):
             Key name (e.g., "C", "G", "F#")
         mode : str
             Scale mode ("major" or "minor")
+        include_controls : bool, optional
+            If True, also generate control MIDI files (scale only, no context chord)
+            with parallel naming (e.g. *_control.mid) so they can be matched to the main files.
+            Default False for backwards compatibility.
             
         Returns
         -------
-        List[str]
-            Paths to all generated MIDI files
+        List[str] or tuple of (List[str], List[str])
+            If include_controls is False: list of paths to generated MIDI files (backwards compatible).
+            If include_controls is True: (paths to main MIDI files, paths to control MIDI files).
         """
         # Get key offset from C
         key_offset = self.key_offsets.get(key_name, 0)
@@ -83,8 +88,9 @@ class ScaleFillingGenerator(MIDIGenerator):
             alternatives_pos6
         ))
         
-        # For each combination, generate a MIDI file
+        # For each combination, generate a MIDI file (and optionally its control)
         generated_paths = []
+        control_paths = []
         
         for combo in all_combinations:
             # Create scale intervals for this combination
@@ -102,7 +108,15 @@ class ScaleFillingGenerator(MIDIGenerator):
             # Generate MIDI file for this scale variation
             output_path = self._generate_midi(key_name, mode, root_note, scale_intervals, combo, is_correct)
             generated_paths.append(output_path)
+            
+            if include_controls:
+                control_path = self._generate_midi_control(
+                    key_name, mode, root_note, scale_intervals, combo, is_correct
+                )
+                control_paths.append(control_path)
         
+        if include_controls:
+            return (generated_paths, control_paths)
         return generated_paths
     
     def _generate_midi(self, key_name, mode, root_note, scale_intervals, combo, is_correct):
@@ -165,9 +179,56 @@ class ScaleFillingGenerator(MIDIGenerator):
         filename = f"{key_name}_{mode.lower()}_scale_{variant_desc}{correct_marker}.mid"
         
         return self._save_midi_file(mid, filename)
+    
+    def _generate_midi_control(self, key_name, mode, root_note, scale_intervals, combo, is_correct):
+        """Generate a control MIDI file: same scale as _generate_midi but without the context chord.
+        
+        Used to compute the marginal likelihood of the scale in the absence of context,
+        so model scores for chord+scale can be normalized by this control.
+        
+        Filename is parallel to the main file: same base with _control before .mid
+        (e.g. C_major_scale_p1-2_p3-5_p5-9_p7-11_correct.mid -> ..._correct_control.mid).
+        
+        Parameters
+        ----------
+        key_name : str
+            Key name
+        mode : str
+            Scale mode
+        root_note : int
+            MIDI note number of the root
+        scale_intervals : List[int]
+            Scale intervals for this variation
+        combo : tuple
+            The specific combination of alternatives used
+        is_correct : bool
+            Whether this is the correct/standard scale
+            
+        Returns
+        -------
+        str
+            Path to the generated control MIDI file
+        """
+        mid = self._create_midi_file()
+        track = mid.tracks[0]
+        
+        # No context chord — same rest then scale only (timing aligned with main file)
+        rest_time = 960  # Half note rest (same as in _generate_midi)
+        
+        scale_notes = [root_note + interval for interval in scale_intervals]
+        
+        for i, note in enumerate(scale_notes):
+            time_value = rest_time if i == 0 else 0
+            self._add_note(track, note, velocity=70, time=time_value, duration=240)
+        
+        variant_desc = f"p1-{combo[0]}_p3-{combo[1]}_p5-{combo[2]}_p7-{combo[3]}"
+        correct_marker = "_correct" if is_correct else ""
+        filename = f"{key_name}_{mode.lower()}_scale_{variant_desc}{correct_marker}_control.mid"
+        
+        return self._save_midi_file(mid, filename)
 
-if __name__ == "__main__":
-    import pathlib
-    output_dir = pathlib.Path(__file__).parent.resolve() / "../data/examples/ScaleExamples" 
-    generator = ScaleFillerGenerator(output_dir)
-    generator.generate_all_scale_variations()
+# if __name__ == "__main__":
+#     import pathlib
+#     output_dir = pathlib.Path(__file__).parent.resolve() / "../data/examples/ScaleExamples" 
+#     generator = ScaleFillerGenerator(output_dir)
+#     generator.generate_all_scale_variations()
